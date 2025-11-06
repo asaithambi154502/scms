@@ -1,9 +1,11 @@
+package com.example.scms.repositories;
 
-package com.example.scms;
-
+import com.example.scms.models.Doctor;
 import org.springframework.data.jpa.repository.JpaRepository;
-import java.util.List;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
-    List<Doctor> findByNameContainingIgnoreCase(String name);
-}
+    Doctor findByEmail(String email); // ✅ Custom finder method
+    }
+    
