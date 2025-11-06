@@ -1,0 +1,9 @@
+mysql> SHOW TABLES;
++------------------+
+| Tables_in_scms   |
++------------------+
+| appointments     |
+| doctors          |
+| patients         |
++------------------+
+3 rows in set (0.00 sec)
