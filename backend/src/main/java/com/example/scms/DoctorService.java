@@ -1,57 +1,107 @@
-package com.example.scms.services;
-
-import com.example.scms.models.Doctor;
-import com.example.scms.repositories.DoctorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-@Service
+// Simple Doctor class
+class Doctor {
+    private Long id;
+    private String name;
+    private String email;
+    private String password;
+    private List<LocalDate> availableDates;
+
+    public Doctor(Long id, String name, String email, String password) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.availableDates = new ArrayList<>();
+    }
+
+    public Long getId() { return id; }
+    public String getName() { return name; }
+    public String getEmail() { return email; }
+    public String getPassword() { return password; }
+    public List<LocalDate> getAvailableDates() { return availableDates; }
+}
+
+// Simple DoctorService (no Spring Boot)
 public class DoctorService {
 
-    @Autowired
-    private DoctorRepository doctorRepository;
+    private List<Doctor> doctors = new ArrayList<>();
 
-    // ✅ 1. Create or update doctor
+    // Add a doctor
     public Doctor saveDoctor(Doctor doctor) {
-        return doctorRepository.save(doctor);
+        doctors.add(doctor);
+        return doctor;
     }
 
-    // ✅ 2. Get all doctors
+    // Get all doctors
     public List<Doctor> getAllDoctors() {
-        return doctorRepository.findAll();
+        return doctors;
     }
 
-    // ✅ 3. Get doctor by ID
+    // Get doctor by ID
     public Doctor getDoctorById(Long id) {
-        return doctorRepository.findById(id).orElse(null);
+        for (Doctor d : doctors) {
+            if (d.getId().equals(id)) return d;
+        }
+        return null;
     }
 
-    // ✅ 4. Delete doctor by ID
+    // Delete doctor by ID
     public void deleteDoctor(Long id) {
-        doctorRepository.deleteById(id);
+        doctors.removeIf(d -> d.getId().equals(id));
     }
 
-    // ✅ 5. Check doctor availability by date (new)
+    // Check doctor availability by date
     public boolean isDoctorAvailable(Long doctorId, LocalDate date) {
-        Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
-        if (doctorOpt.isEmpty()) {
-            return false;
-        }
+        Optional<Doctor> doctorOpt = doctors.stream()
+                .filter(d -> d.getId().equals(doctorId))
+                .findFirst();
+        if (doctorOpt.isEmpty()) return false;
         Doctor doctor = doctorOpt.get();
-        // Example logic — replace with your real data model
-        return doctor.getAvailableDates() != null && doctor.getAvailableDates().contains(date);
+        return doctor.getAvailableDates().contains(date);
     }
 
-    // ✅ 6. Validate doctor login (new)
+    // Validate login
     public Doctor validateLogin(String email, String password) {
-        Doctor doctor = doctorRepository.findByEmail(email);
-        if (doctor != null && doctor.getPassword().equals(password)) {
-            return doctor; // Login success
+        for (Doctor d : doctors) {
+            if (d.getEmail().equals(email) && d.getPassword().equals(password)) {
+                return d;
+            }
         }
-        return null; // Invalid login
+        return null;
+    }
+
+    // Main method to test the program
+    public static void main(String[] args) {
+        a service = new a();
+
+        // Add doctors
+        service.saveDoctor(new Doctor(1L, "Dr. Rajesh", "rajesh@clinic.com", "1234"));
+        service.saveDoctor(new Doctor(2L, "Dr. Priya", "priya@clinic.com", "abcd"));
+
+        // Display all doctors
+        System.out.println("All Doctors:");
+        for (Doctor d : service.getAllDoctors()) {
+            System.out.println("- " + d.getName() + " (" + d.getEmail() + ")");
+        }
+
+        // Find by ID
+        Doctor doc = service.getDoctorById(1L);
+        System.out.println("\nDoctor with ID 1: " + (doc != null ? doc.getName() : "Not Found"));
+
+        // Validate login
+        Doctor login = service.validateLogin("priya@clinic.com", "abcd");
+        System.out.println("\nLogin Result: " + (login != null ? "Success" : "Invalid Credentials"));
+
+        // Delete one doctor
+        service.deleteDoctor(1L);
+        System.out.println("\nAfter deletion:");
+        for (Doctor d : service.getAllDoctors()) {
+            System.out.println("- " + d.getName());
+        }
     }
 }
